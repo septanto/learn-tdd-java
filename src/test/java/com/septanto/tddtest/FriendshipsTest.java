@@ -1,21 +1,37 @@
 package com.septanto.tddtest;
 
+import com.septanto.tdd.FriendsCollection;
 import com.septanto.tdd.Friendships;
+import com.septanto.tdd.Person;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
+@RunWith(MockitoJUnitRunner.class)
+public class FriendshipsTest {
 
-public class FriendshipsTestJUnit {
+    @InjectMocks
     Friendships friendships;
+
+    @Mock
+    FriendsCollection friends;
 
     @BeforeClass
     public static void beforeClass() {
@@ -37,9 +53,17 @@ public class FriendshipsTestJUnit {
         Assert.assertTrue("Alex does not have friends", friendships.getFriendList("Alex").isEmpty());
     }
 
-    @Test // hamcrest stye
+    @Test
     public void joeHas5Friends() {
-        assertThat(friendships.getFriendList("Joe"), hasSize(5));
+        List<String> expected = Arrays.asList("Audrey", "Peter", "Michael", "Britney", "Paul");
+        Person joe = spy(new Person("Joe"));
+
+        doReturn(joe).when(friends).findByName("Joe");
+        doReturn(expected).when(joe).getFriends();
+
+        assertThat(friendships.getFriendList("Joe"))
+                .hasSize(5)
+                .containsOnly("Audrey", "Peter", "Michael", "Britney", "Paul");
     }
 
     @Test // hamcrest stye
@@ -48,13 +72,6 @@ public class FriendshipsTestJUnit {
                 friendships.getFriendList("Joe"),
                 containsInAnyOrder("Audrey", "Peter", "Michael", "Britney", "Paul")
         );
-    }
-
-    @Test // assertJ style of test 2 and 3
-    public void testTwoAndThree() {
-        assertThat(friendships.getFriendList("Joe"))
-        .hasSize(5)
-        .containsOnly("Audrey", "Peter", "Michael", "Britney", "Paul");
     }
 
     @AfterClass
