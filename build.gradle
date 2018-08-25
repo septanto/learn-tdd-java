@@ -1,12 +1,18 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'com.gradle.build-scan' version '1.16'
 }
 
 group 'com.septanto.tdd'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
+
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}
 
 repositories {
     mavenCentral()
@@ -21,4 +27,40 @@ dependencies {
     testCompile group: 'org.assertj', name: 'assertj-core', version: '2.0.0'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.+'
     testCompile 'com.codeborne:selenide:4.12.3'
+    testCompile 'org.jbehave:jbehave-core:3.9.5'
+    testCompile 'org.jbehave.site:jbehave-site-resources:3.2@zip'
+    testCompile 'io.cucumber:cucumber-java:3.0.2'
+    testCompile 'io.cucumber:cucumber-junit:3.0.2'
+}
+
+def jarPath(String jarName) {
+    configurations.testCompile.filter{it.name.startsWith(jarName)}.asPath
+}
+
+task testJBehave(type: Test) {
+    include '**/JBehaveTest*'
+}
+
+task testCucumber(type: Test) {
+    include '**/CucumberTest*'
+}
+
+test {
+    doFirst {
+        copy {
+            from(zipTree(jarPath("jbehave-core"))) {
+                include "style/*"
+            }
+            into("build/reports/jbehave/view")
+
+        }
+        copy {
+            from(zipTree(jarPath("jbehave-site-resources"))) {
+                include "js/**/*"
+                include "style/**/*"
+                include "images/*"
+            }
+            into("build/reports/jbehave/view")
+        }
+    }
 }
